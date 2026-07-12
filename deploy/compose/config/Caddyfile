@@ -1,0 +1,105 @@
+# Caddyfile for QQQ Business Platform
+# Reverse proxy and TLS termination
+
+# Main site (Next.js frontend)
+localhost {
+    # Public website
+    handle /api/public/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    # Member API (authenticated) 
+    handle /api/member/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    # Staff API (authenticated)
+    handle /api/staff/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    # Health checks
+    handle /health {
+        reverse_proxy qqq-server:8080
+    }
+    
+    # API documentation
+    handle /swagger-ui/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    handle /v3/api-docs/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    # Default to Next.js frontend
+    handle {
+        reverse_proxy nextjs-site:3000
+    }
+    
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # XSS Protection
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        
+        # CSP (basic)
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'"
+        
+        # Remove server info
+        -Server
+    }
+    
+    # Enable compression
+    encode gzip zstd
+    
+    # Access logging
+    log {
+        output file /var/log/caddy/access.log
+        format console
+    }
+}
+
+# Admin subdomain (if used in production)
+admin.localhost {
+    handle /api/staff/* {
+        reverse_proxy qqq-server:8080
+    }
+    
+    handle {
+        reverse_proxy nextjs-site:3000
+    }
+    
+    # Additional security for admin interface
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'"
+    }
+}
+
+# Keycloak (development only - production should use separate domain)
+auth.localhost {
+    reverse_proxy keycloak:8081
+    
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+    }
+}
+
+# MinIO console (development only)
+storage.localhost {
+    reverse_proxy minio:9001
+}
+
+# Mailpit (development only) 
+mail.localhost {
+    reverse_proxy mailpit:8025
+}

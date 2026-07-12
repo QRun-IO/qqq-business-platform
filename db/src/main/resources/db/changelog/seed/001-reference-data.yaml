@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-reference-data
+      author: qrun
+      context: seed
+      changes:
+        - insert:
+            tableName: platform_setting
+            columns:
+              - column: { name: setting_key, value: dashboard }
+              - column: { name: setting_value, value: material-dashboard }

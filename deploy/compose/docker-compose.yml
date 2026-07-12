@@ -1,0 +1,324 @@
+version: '3.8'
+
+# QQQ Business Platform - Complete Stack
+# Target: 90-second golden path (median of 5 runs, CI ≤150s)
+
+services:
+  # ========== Database Layer ==========
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: qqq-platform-postgres
+    environment:
+      POSTGRES_DB: qqq_platform
+      POSTGRES_USER: platform_ddl
+      POSTGRES_PASSWORD: platform_ddl_password
+      # Application user created by init script
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./config/postgres-tuning.conf:/etc/postgresql/postgresql.conf:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform_ddl -d qqq_platform"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Migration ==========
+  
+  migrate:
+    image: liquibase/liquibase:4.25-alpine
+    container_name: qqq-platform-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/qqq_platform
+      LIQUIBASE_COMMAND_USERNAME: platform_ddl
+      LIQUIBASE_COMMAND_PASSWORD: platform_ddl_password
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.xml
+      LIQUIBASE_HUB_MODE: "off"
+    volumes:
+      - ../../db:/liquibase/changelog:ro
+    command: >
+      sh -c "
+        echo 'Running schema migrations...' &&
+        liquibase --contexts=schema update &&
+        echo 'Running baseline seed data...' &&
+        liquibase --contexts=baseline update &&
+        echo 'Running demo seed data...' &&
+        liquibase --contexts=demo update &&
+        echo 'Migration completed successfully!'
+      "
+    networks:
+      - platform-network
+
+  # ========== Identity Provider ==========
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: qqq-platform-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: qqq_platform
+      KC_DB_USERNAME: platform_ddl  
+      KC_DB_PASSWORD: platform_ddl_password
+      KC_DB_SCHEMA: keycloak
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+    command: >
+      sh -c "
+        echo 'Starting Keycloak server...' &&
+        /opt/keycloak/bin/kc.sh start-dev --import-realm --http-port=8081
+      "
+    volumes:
+      - ./config/keycloak-realm.json:/opt/keycloak/data/import/qqq-platform-realm.json:ro
+      - keycloak_data:/opt/keycloak/data
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Object Storage ==========
+  
+  minio:
+    image: minio/minio:RELEASE.2024-01-01T16-36-33Z
+    container_name: qqq-platform-minio
+    environment:
+      MINIO_ROOT_USER: minio_admin
+      MINIO_ROOT_PASSWORD: minio_admin_password
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # Initialize MinIO buckets
+  minio-setup:
+    image: minio/mc:RELEASE.2024-01-01T05-06-40Z
+    container_name: qqq-platform-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        echo 'Setting up MinIO buckets...' &&
+        mc alias set minio http://minio:9000 minio_admin minio_admin_password &&
+        mc mb minio/platform-assets --ignore-existing &&
+        mc mb minio/platform-uploads --ignore-existing &&
+        mc policy set public minio/platform-assets &&
+        echo 'MinIO setup completed!'
+      "
+    networks:
+      - platform-network
+
+  # ========== Email (Development) ==========
+  
+  mailpit:
+    image: axllent/mailpit:v1.15
+    container_name: qqq-platform-mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Application Layer ==========
+  
+  qqq-server:
+    build:
+      context: ../..
+      dockerfile: platform-app/Dockerfile
+    image: qqq-business-platform:latest
+    container_name: qqq-platform-server
+    environment:
+      # Database
+      DB_URL: jdbc:postgresql://postgres:5432/qqq_platform
+      DB_USERNAME: platform_app
+      DB_PASSWORD: platform_app_password
+      
+      # Security
+      KEYCLOAK_ISSUER_URI: http://keycloak:8081/realms/qqq-platform
+      
+      # Object Storage
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minio_admin
+      MINIO_SECRET_KEY: minio_admin_password
+      
+      # Email
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      
+      # Application
+      SPRING_PROFILES_ACTIVE: compose
+      SERVER_PORT: 8080
+      
+      # Performance tuning
+      JAVA_OPTS: >-
+        -Xms512m -Xmx1g 
+        -XX:+UseG1GC 
+        -XX:MaxGCPauseMillis=100
+        -XX:+UseStringDeduplication
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      minio-setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Frontend ==========
+  
+  nextjs-site:
+    build:
+      context: ../../web
+      dockerfile: Dockerfile
+    image: qqq-platform-web:latest
+    container_name: qqq-platform-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api/public/v1
+      NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:8081
+      NEXT_PUBLIC_KEYCLOAK_REALM: qqq-platform
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: platform-web
+      API_BASE_URL_INTERNAL: http://qqq-server:8080/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      qqq-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Reverse Proxy ==========
+  
+  caddy:
+    image: caddy:2.7-alpine
+    container_name: qqq-platform-caddy
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - qqq-server
+      - nextjs-site
+    networks:
+      - platform-network
+    restart: unless-stopped
+
+  # ========== Golden Path Validation ==========
+  
+  healthcheck:
+    image: curlimages/curl:8.5.0
+    container_name: qqq-platform-healthcheck
+    depends_on:
+      caddy:
+        condition: service_started
+      qqq-server:
+        condition: service_healthy
+      nextjs-site:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Starting golden path validation...' &&
+        sleep 5 &&
+        
+        echo 'Testing public API...' &&
+        curl -f http://qqq-server:8080/api/public/v1/health &&
+        
+        echo 'Testing member API (should require auth)...' &&
+        curl -s -o /dev/null -w '%{http_code}' http://qqq-server:8080/api/member/v1/profile | grep -q '401' &&
+        
+        echo 'Testing staff API (should require auth)...' &&
+        curl -s -o /dev/null -w '%{http_code}' http://qqq-server:8080/api/staff/v1/content | grep -q '401' &&
+        
+        echo 'Testing Next.js frontend...' &&
+        curl -f http://nextjs-site:3000/ &&
+        
+        echo 'Testing Keycloak realm...' &&
+        curl -f http://keycloak:8081/realms/qqq-platform/.well-known/openid_configuration &&
+        
+        echo 'Golden path validation completed successfully!' &&
+        exit 0
+      "
+    networks:
+      - platform-network
+
+# ========== Volumes ==========
+
+volumes:
+  postgres_data:
+    driver: local
+  keycloak_data:
+    driver: local
+  minio_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+# ========== Networks ==========
+
+networks:
+  platform-network:
+    driver: bridge
+    name: qqq-platform

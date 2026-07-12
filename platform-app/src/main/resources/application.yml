@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: qqq-business-platform
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+server:
+  port: ${PORT:8080}
+qqq:
+  instance:
+    dashboard: material-dashboard

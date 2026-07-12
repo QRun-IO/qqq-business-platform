@@ -1,0 +1,115 @@
+# QQQ Business Platform API Configuration
+spring:
+  application:
+    name: qqq-business-platform-api
+    
+  # Security configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/qqq-platform}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs}
+  
+  # Database configuration (inherited from platform-app)
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/qqq_platform}
+    username: ${DB_USERNAME:platform_app}
+    password: ${DB_PASSWORD:platform_app_password}
+    driver-class-name: org.postgresql.Driver
+    
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Liquibase owns DDL, validate only
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Server configuration
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# OpenAPI documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: false
+
+# Rate limiting configuration (to be implemented)
+rate-limiting:
+  public-api:
+    requests-per-minute: ${PUBLIC_API_RATE_LIMIT:60}
+    requests-per-hour: ${PUBLIC_API_HOURLY_LIMIT:1000}
+  
+# CORS configuration  
+cors:
+  public-origins: ${PUBLIC_CORS_ORIGINS:http://localhost:3000,https://*.qrun.io}
+  member-origins: ${MEMBER_CORS_ORIGINS:http://localhost:3001,https://app.qrun.io}  
+  staff-origins: ${STAFF_CORS_ORIGINS:http://localhost:3002,https://admin.qrun.io}
+
+# QQQ Framework configuration
+qqq:
+  instance:
+    name: qqq-business-platform
+  backend:
+    default: postgres
+  security:
+    default-permissions: deny
+    
+# Logging
+logging:
+  level:
+    io.qrun.qqq.platform: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:WARN}
+    org.springframework.web.cors: ${CORS_LOG_LEVEL:WARN}
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# Development profile
+spring:
+  config:
+    activate:
+      on-profile: development
+      
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/qqq-platform
+          
+logging:
+  level:
+    io.qrun.qqq.platform: DEBUG
+    org.springframework.security: DEBUG
+    root: INFO
+
+---  
+# Production profile
+spring:
+  config:
+    activate:
+      on-profile: production
+      
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          
+logging:
+  level:
+    root: WARN
+    io.qrun.qqq.platform: INFO

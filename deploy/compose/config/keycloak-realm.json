@@ -1,0 +1,188 @@
+{
+  "realm": "qqq-platform",
+  "enabled": true,
+  "displayName": "QQQ Business Platform",
+  "displayNameHtml": "<strong>QQQ Business Platform</strong>",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "roles": {
+    "realm": [
+      {
+        "name": "MEMBER",
+        "description": "Authenticated member access",
+        "composite": false
+      },
+      {
+        "name": "STAFF", 
+        "description": "Administrative staff access",
+        "composite": false
+      },
+      {
+        "name": "ADMIN",
+        "description": "Full administrative access",
+        "composite": true,
+        "composites": {
+          "realm": ["STAFF", "MEMBER"]
+        }
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "platform-web",
+      "name": "QQQ Platform Web Client",
+      "description": "Public web client for member and staff access",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "platform-web-secret",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8080/*", 
+        "https://app.qrun.io/*",
+        "https://admin.qrun.io/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://app.qrun.io", 
+        "https://admin.qrun.io"
+      ],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false", 
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "use.refresh.tokens": "true",
+        "exclude.session.state.from.auth.response": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "saml.artifact.binding": "false",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "saml_force_name_id_format": "false",
+        "require.pushed.authorization.requests": "false",
+        "saml.client.signature": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "saml.authnstatement": "false",
+        "display.on.consent.screen": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "web-origins",
+        "role_list", 
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@qrun.io",
+      "email": "admin@qrun.io", 
+      "firstName": "Platform",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN", "STAFF", "MEMBER"],
+      "attributes": {
+        "userProfileId": ["admin-user-001"]
+      }
+    },
+    {
+      "username": "staff@qrun.io",
+      "email": "staff@qrun.io",
+      "firstName": "Staff",
+      "lastName": "User", 
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "staff123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["STAFF", "MEMBER"],
+      "attributes": {
+        "userProfileId": ["staff-user-001"]
+      }
+    },
+    {
+      "username": "member@qrun.io",
+      "email": "member@qrun.io",
+      "firstName": "Test",
+      "lastName": "Member",
+      "enabled": true,
+      "emailVerified": true, 
+      "credentials": [
+        {
+          "type": "password",
+          "value": "member123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["MEMBER"],
+      "attributes": {
+        "userProfileId": ["member-user-001"]
+      }
+    }
+  ],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "attributes": {
+    "cibaBackchannelTokenDeliveryMode": "poll",
+    "cibaExpiresIn": "120",
+    "cibaInterval": "5",
+    "cibaAuthRequestedUserHint": "login_hint",
+    "parRequestUriLifespan": "60",
+    "clientSessionIdleTimeout": "1800",
+    "clientSessionMaxLifespan": "36000",
+    "clientOfflineSessionIdleTimeout": "2592000", 
+    "clientOfflineSessionMaxLifespan": "5184000"
+  }
+}
