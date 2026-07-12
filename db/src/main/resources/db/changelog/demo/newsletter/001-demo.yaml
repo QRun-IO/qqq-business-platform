@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: newsletter-001-demo
+      author: qrun
+      context: demo
+      comment: Fixed IDs and timestamps make the optional demo dataset reproducible.
+      changes:
+        - insert:
+            tableName: newsletter_subscription
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000101" }
+              - column: { name: email, value: "demo@example.test" }
+              - column: { name: status, value: "confirmed" }
+              - column: { name: preferences, value: '{"topics":["product"]}' }
+              - column: { name: source_ip, value: "192.0.2.1" }
+              - column: { name: confirmed_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+              - column: { name: created_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+              - column: { name: updated_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+        - insert:
+            tableName: newsletter_segment
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000102" }
+              - column: { name: name, value: "Demo subscribers" }
+              - column: { name: segment_type, value: "static" }
+              - column: { name: criteria, value: '{}' }
+              - column: { name: static_subscription_ids, value: '["00000000-0000-0000-0000-000000000101"]' }
+              - column: { name: created_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+              - column: { name: updated_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+        - insert:
+            tableName: newsletter_campaign
+            columns:
+              - column: { name: id, value: "00000000-0000-0000-0000-000000000103" }
+              - column: { name: subject, value: "Welcome to the demo" }
+              - column: { name: content, value: "Deterministic newsletter demo content." }
+              - column: { name: segment_id, value: "00000000-0000-0000-0000-000000000102" }
+              - column: { name: targeting, value: '{}' }
+              - column: { name: status, value: "draft" }
+              - column: { name: created_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }
+              - column: { name: updated_at, valueComputed: "TIMESTAMPTZ '2024-01-01 00:00:00+00'" }

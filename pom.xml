@@ -34,10 +34,24 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- The reactor parent cannot import its child platform-bom: that creates a Maven model cycle. -->
       <dependency>
-        <groupId>io.qrun</groupId><artifactId>platform-bom</artifactId><version>${project.version}</version>
-        <type>pom</type><scope>import</scope>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-core</artifactId>
+        <version>${liquibase.version}</version>
+      </dependency>
+      <dependency><groupId>io.qrun</groupId><artifactId>platform-db</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>io.qrun</groupId><artifactId>qbit-identity</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>io.qrun</groupId><artifactId>qbit-content</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>io.qrun</groupId><artifactId>qbit-newsletter</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>io.qrun</groupId><artifactId>qbit-crm</artifactId><version>${project.version}</version></dependency>
     </dependencies>
   </dependencyManagement>
 

@@ -1,0 +1,26 @@
+name: Database migrations
+
+on:
+  pull_request:
+    paths:
+      - "db/**"
+      - "pom.xml"
+      - ".github/workflows/db-migrations.yml"
+  push:
+    branches: [main]
+    paths:
+      - "db/**"
+      - "pom.xml"
+
+jobs:
+  empty-database-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Empty PostgreSQL -> migrate -> validate, demo determinism, forward-only policy
+        run: mvn -B -pl db verify

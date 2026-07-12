@@ -1,5 +1,12 @@
 databaseChangeLog:
+  # Ordered explicitly: never use includeAll because filesystem ordering is not a migration contract.
   - include:
-      file: db/changelog/changes/001-initial-schema.yaml
+      file: db/changelog/platform/001-schema.yaml
   - include:
-      file: db/changelog/seed/001-reference-data.yaml
+      file: db/changelog/qbits/newsletter/001-baseline.yaml
+  - include:
+      file: db/changelog/qbits/content/001-baseline.yaml
+  - include:
+      file: db/changelog/demo/newsletter/001-demo.yaml
+
+  # Add each QBit in its own directory and append includes here. Released files are immutable.

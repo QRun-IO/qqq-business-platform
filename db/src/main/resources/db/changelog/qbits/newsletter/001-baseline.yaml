@@ -1,0 +1,132 @@
+databaseChangeLog:
+  - changeSet:
+      id: newsletter-001-baseline
+      author: qrun
+      context: baseline
+      comment: Newsletter QBit baseline extracted from qbits/newsletter/src/main/resources/schema.sql.
+      preConditions:
+        - onFail: HALT
+        - dbms:
+            type: postgresql
+      changes:
+        - createTable:
+            tableName: newsletter_subscription
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: email, type: varchar(320), constraints: { nullable: false, unique: true } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: preferences, type: text, defaultValue: '{}', constraints: { nullable: false } }
+              - column: { name: source_ip, type: varchar(64) }
+              - column: { name: confirmed_at, type: timestamptz }
+              - column: { name: unsubscribed_at, type: timestamptz }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamptz, constraints: { nullable: false } }
+        - sql:
+            sql: "ALTER TABLE newsletter_subscription ADD CONSTRAINT ck_newsletter_subscription_status CHECK (status IN ('pending','confirmed','unsubscribed'))"
+
+        - createTable:
+            tableName: newsletter_segment
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: name, type: varchar(200), constraints: { nullable: false, unique: true } }
+              - column: { name: segment_type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: criteria, type: text, defaultValue: '{}', constraints: { nullable: false } }
+              - column: { name: static_subscription_ids, type: text, defaultValue: '[]', constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamptz, constraints: { nullable: false } }
+        - sql:
+            sql: "ALTER TABLE newsletter_segment ADD CONSTRAINT ck_newsletter_segment_type CHECK (segment_type IN ('dynamic','static'))"
+
+        - createTable:
+            tableName: newsletter_campaign
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: subject, type: varchar(500), constraints: { nullable: false } }
+              - column: { name: content, type: text, constraints: { nullable: false } }
+              - column: { name: cms_content_id, type: uuid }
+              - column: { name: segment_id, type: uuid }
+              - column: { name: targeting, type: text, defaultValue: '{}', constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: scheduled_at, type: timestamptz }
+              - column: { name: sent_at, type: timestamptz }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamptz, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: newsletter_campaign
+            baseColumnNames: segment_id
+            referencedTableName: newsletter_segment
+            referencedColumnNames: id
+            constraintName: fk_newsletter_campaign_segment
+        - sql:
+            sql: "ALTER TABLE newsletter_campaign ADD CONSTRAINT ck_newsletter_campaign_status CHECK (status IN ('draft','scheduled','sending','sent','cancelled'))"
+
+        - createTable:
+            tableName: outbound_email
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: subscription_id, type: uuid }
+              - column: { name: campaign_id, type: uuid }
+              - column: { name: message_type, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: recipient, type: varchar(320), constraints: { nullable: false } }
+              - column: { name: subject, type: varchar(500), constraints: { nullable: false } }
+              - column: { name: body, type: text, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: attempt_count, type: int, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: max_attempts, type: int, defaultValueNumeric: 5, constraints: { nullable: false } }
+              - column: { name: next_attempt_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: provider_message_id, type: varchar(255) }
+              - column: { name: last_error, type: text }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: sent_at, type: timestamptz }
+        - addForeignKeyConstraint:
+            baseTableName: outbound_email
+            baseColumnNames: subscription_id
+            referencedTableName: newsletter_subscription
+            referencedColumnNames: id
+            constraintName: fk_outbound_email_subscription
+        - addForeignKeyConstraint:
+            baseTableName: outbound_email
+            baseColumnNames: campaign_id
+            referencedTableName: newsletter_campaign
+            referencedColumnNames: id
+            constraintName: fk_outbound_email_campaign
+        - sql:
+            sql: "ALTER TABLE outbound_email ADD CONSTRAINT ck_outbound_email_status CHECK (status IN ('pending','processing','sent','retry','failed','suppressed'))"
+        - createIndex:
+            tableName: outbound_email
+            indexName: ix_outbound_due
+            columns:
+              - column: { name: status }
+              - column: { name: next_attempt_at }
+
+        - createTable:
+            tableName: email_suppression
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: email, type: varchar(320), constraints: { nullable: false, unique: true } }
+              - column: { name: reason, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: source, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: details, type: text }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: expires_at, type: timestamptz }
+
+        - createTable:
+            tableName: opt_in_token
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: subscription_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: token_hash, type: varchar(64), constraints: { nullable: false, unique: true } }
+              - column: { name: expires_at, type: timestamptz, constraints: { nullable: false } }
+              - column: { name: consumed_at, type: timestamptz }
+              - column: { name: created_at, type: timestamptz, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: opt_in_token
+            baseColumnNames: subscription_id
+            referencedTableName: newsletter_subscription
+            referencedColumnNames: id
+            constraintName: fk_opt_in_token_subscription
+        - createIndex:
+            tableName: opt_in_token
+            indexName: ix_opt_in_hash
+            columns:
+              - column: { name: token_hash }

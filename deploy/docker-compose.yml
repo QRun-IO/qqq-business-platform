@@ -1,4 +1,36 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: qqq
+      POSTGRES_USER: qqq
+      POSTGRES_PASSWORD: qqq
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qqq -d qqq"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  migrate:
+    image: liquibase/liquibase:4.29
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/qqq
+      LIQUIBASE_COMMAND_USERNAME: qqq
+      LIQUIBASE_COMMAND_PASSWORD: qqq
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: db/changelog/db.changelog-master.yaml
+      LIQUIBASE_SEARCH_PATH: /liquibase/changelog
+      LIQUIBASE_COMMAND_DEFAULT_SCHEMA_NAME: public
+      LIQUIBASE_COMMAND_CONTEXT_FILTER: ${LIQUIBASE_CONTEXTS:-baseline}
+    volumes:
+      - ../db/src/main/resources:/liquibase/changelog:ro
+    command: ["update"]
+
   app:
     image: qqq-business-platform:0.1.0-SNAPSHOT
     build:
@@ -8,23 +40,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/qqq
       SPRING_DATASOURCE_USERNAME: qqq
       SPRING_DATASOURCE_PASSWORD: qqq
+      SPRING_LIQUIBASE_ENABLED: "false"
     ports:
       - "8080:8080"
     depends_on:
-      postgres:
-        condition: service_healthy
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: qqq
-      POSTGRES_USER: qqq
-      POSTGRES_PASSWORD: qqq
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U qqq"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   postgres-data:

@@ -1,0 +1,6 @@
+package io.qrun.platform.content.model;
+import java.time.Instant; import com.kingsrook.qqq.backend.core.model.data.*; import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+@QMetaDataProducingEntity(produceTableMetaData=true,producePossibleValueSource=true) @lombok.Setter public class RedirectRecord extends QRecordEntity { public static final String TABLE_NAME=ContentTables.REDIRECT;
+ @QField(isPrimaryKey=true,isEditable=false) private String id; @QField(isRequired=true,possibleValueSourceName=SiteRecord.TABLE_NAME) private String siteId; @QField(isRequired=true,maxLength=1024) private String sourceUrl; @QField(isRequired=true,maxLength=1024) private String destinationUrl; @QField(isRequired=true,maxLength=3) private String type; @QField(maxLength=500) private String description; @QField(isRequired=true,isEditable=false) private Instant createdAt; @QField(isRequired=true,isEditable=false) private Instant updatedAt;
+ public String getId(){return id;} public String getSiteId(){return siteId;} public String getSourceUrl(){return sourceUrl;} public String getDestinationUrl(){return destinationUrl;} public String getType(){return type;} public String getDescription(){return description;} public Instant getCreatedAt(){return createdAt;} public Instant getUpdatedAt(){return updatedAt;}
+}

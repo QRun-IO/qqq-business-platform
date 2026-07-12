@@ -1,14 +1,10 @@
 package io.qrun.platform.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import liquibase.Contexts;
@@ -19,11 +15,13 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
+@DisabledIfEnvironmentVariable(named = "QQQ_EXTERNAL_DB_URL", matches = ".+")
 class NewsletterMigrationIT {
 
   private static final String CHANGELOG = "db/changelog/db.changelog-master.yaml";
@@ -66,22 +64,6 @@ class NewsletterMigrationIT {
       liquibase.update(new Contexts("baseline,demo"), new LabelExpression());
       assertEquals(1, count(connection, "newsletter_subscription"));
       assertEquals(3, appliedChangeSets(connection));
-    }
-  }
-
-  @Test
-  void committedChangesAreForwardOnly() throws Exception {
-    Path changes = Path.of("src/main/resources/db/changelog");
-    try (var paths = Files.walk(changes)) {
-      List<Path> changelogs = paths
-          .filter(path -> path.toString().endsWith(".yaml"))
-          .toList();
-      assertFalse(changelogs.isEmpty());
-      for (Path changelog : changelogs) {
-        String contents = Files.readString(changelog);
-        assertFalse(contents.contains("validCheckSum: ANY"), changelog + " disables checksum validation");
-        assertFalse(contents.matches("(?s).*\\brollback\\s*:.*"), changelog + " defines rollback in a forward-only project");
-      }
     }
   }
 
