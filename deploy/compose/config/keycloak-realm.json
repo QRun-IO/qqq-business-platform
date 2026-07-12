@@ -63,7 +63,7 @@
       ],
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "publicClient": false,
       "frontchannelLogout": true,
@@ -166,6 +166,16 @@
       "attributes": {
         "userProfileId": ["member-user-001"]
       }
+    },
+    {
+      "username": "member-b@qrun.io",
+      "email": "member-b@qrun.io",
+      "firstName": "Second",
+      "lastName": "Member",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "memberb123", "temporary": false}],
+      "realmRoles": ["MEMBER"]
     }
   ],
   "browserFlow": "browser",

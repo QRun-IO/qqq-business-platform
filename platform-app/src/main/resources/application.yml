@@ -1,8 +1,21 @@
 spring:
   application:
     name: qqq-business-platform
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/qqq_platform}
+    username: ${DB_USERNAME:platform_app}
+    password: ${DB_PASSWORD:platform_app_password}
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: false
+  sql:
+    init:
+      mode: never
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}/protocol/openid-connect/certs}
 management:
   endpoints:
     web:
@@ -13,7 +26,14 @@ management:
       probes:
         enabled: true
 server:
-  port: ${PORT:8080}
+  port: ${SERVER_PORT:${PORT:8080}}
+newsletter:
+  provider: ${NEWSLETTER_PROVIDER:smtp}
+  from: ${NEWSLETTER_FROM:no-reply@localhost}
+  confirmation-base-url: ${NEWSLETTER_CONFIRM_URL:http://localhost:8080/api/public/v1/newsletter/confirm}
+  worker:
+    delay-ms: ${NEWSLETTER_WORKER_DELAY_MS:1000}
+    batch-size: ${NEWSLETTER_WORKER_BATCH_SIZE:50}
 qqq:
   instance:
     dashboard: material-dashboard

@@ -9,8 +9,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci --only=production; \
-  else echo "Warning: Lockfile not found. It is recommended to commit lockfiles to version control." && npm install --only=production; \
+  if [ -f package-lock.json ]; then npm ci; \
+  else echo "Warning: Lockfile not found. It is recommended to commit lockfiles to version control." && npm install; \
   fi
 
 # Rebuild the source code only when needed

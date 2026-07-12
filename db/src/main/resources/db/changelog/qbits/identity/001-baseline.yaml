@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: identity-001-baseline
+      author: qrun
+      context: baseline
+      changes:
+        - createTable:
+            tableName: user_profile
+            columns:
+              - column: { name: id, type: bigint, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: oidc_sub, type: varchar(255), constraints: { nullable: false, unique: true } }
+              - column: { name: email, type: varchar(320) }
+              - column: { name: display_name, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamptz, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamptz, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: user_profile
+            indexName: ix_user_profile_email
+            columns:
+              - column: { name: email }
