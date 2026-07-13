@@ -1,295 +1,341 @@
-# 🤖 QQQ Platform Agent Customization Guide
+# Agent Customization Guide
 
-This guide is specifically designed for AI agents to help users customize and deploy the QQQ Business Platform.
+This guide provides AI agents with systematic procedures for customizing and extending the QQQ Business Platform to meet specific business requirements.
 
-## 🎯 Agent Objectives
+## Agent Responsibilities
 
-When helping users customize this platform, focus on:
-1. **Understanding their business needs** (industry, audience, features)
-2. **Implementing changes systematically** (brand → content → functionality)
-3. **Maintaining quality** (tests pass, no regressions)
-4. **Ensuring deployability** (production-ready configuration)
+When assisting users with platform customization, maintain focus on:
 
-## 🧠 Platform Knowledge for Agents
+1. **Requirements Analysis**: Understand business context, industry requirements, and user expectations
+2. **Systematic Implementation**: Apply changes in logical order to minimize integration issues
+3. **Quality Assurance**: Validate all modifications through automated testing
+4. **Documentation**: Update relevant documentation to reflect customizations
 
-### Core Architecture Understanding
-```
-Frontend (Next.js) ←→ Backend API (Spring Boot) ←→ Database (PostgreSQL)
-     ↓                       ↓                         ↓
-Authentication (Keycloak) ← QBit Modules → Migrations (Liquibase)
-```
+## Platform Architecture Knowledge
 
-**Key Files Agents Should Know**:
-- `web/app/page.tsx` - Homepage content
-- `web/app/layout.tsx` - Site-wide configuration
-- `web/components/` - Reusable UI components
-- `platform-app/src/main/resources/application.yml` - Backend config
-- `deploy/compose/docker-compose.yml` - Infrastructure setup
-- `web/tests/` - E2E validation tests
+### System Components
 
-### QBit System (Extensibility Points)
-Each QBit is a business capability module:
-- **newsletter**: Email marketing and subscriptions
-- **content**: CMS and blog management  
-- **identity**: User profiles and authentication
-- **crm**: Contact and relationship management
+**Frontend Layer (Next.js)**
+- `web/app/` - Page components and routing configuration
+- `web/components/` - Reusable user interface components
+- `web/lib/` - Utility functions and API client libraries
+- `web/tests/` - End-to-end test specifications
 
-**Adding New Capabilities**: Create new QBits in `qbits/[name]/`
+**Backend Layer (Spring Boot)**
+- `platform-app/` - Main application and configuration
+- `platform-api/` - REST API controllers and security
+- `qbits/` - Modular business capability extensions
 
-## 🔧 Common Customization Patterns
+**Infrastructure Layer**
+- `deploy/compose/` - Docker Compose configuration
+- `db/` - Database migrations and schema definitions
 
-### Pattern 1: Brand Identity Transformation
-```typescript
-// 1. Update theme colors (web/app/globals.css)
-:root {
-  --primary: #your-brand-color;
-  --logo-url: url('/your-logo.svg');
-}
+### Extension Points
 
-// 2. Replace content (web/app/page.tsx)
-const heroTitle = "Your Business Value Proposition"
-const description = "Your unique selling proposition"
+The platform supports customization through established extension mechanisms:
 
-// 3. Update metadata (web/app/layout.tsx)  
-export const metadata = {
-  title: "Your Business Name",
-  description: "Your business description"
-}
-```
+**QBit Modules**: Self-contained business capabilities
+- Newsletter management (`qbits/newsletter/`)
+- Content management (`qbits/content/`)
+- User identity (`qbits/identity/`)
+- Customer relationships (`qbits/crm/`)
 
-### Pattern 2: Feature Configuration
-```yaml
-# Backend feature toggles (application.yml)
-platform:
-  features:
-    newsletter: true
-    crm: true
-    ecommerce: false  # Example extension
-  integrations:
-    payment: stripe   # Example
-    analytics: plausible
-```
+**API Layers**: Tiered access control
+- Public API: Unauthenticated access for general content
+- Member API: Authenticated user functionality
+- Staff API: Administrative and management operations
 
-### Pattern 3: Content Customization
-```typescript
-// Homepage sections (web/app/page.tsx)
-const features = [
-  [IconName, 'Your Feature', 'Your description'],
-  // Add/modify features
-]
+## Customization Workflows
 
-const testimonials = [
-  { quote: "Your testimonial", author: "Customer Name", role: "Their Role" }
-]
-```
+### Brand Identity Implementation
 
-## 🛠️ Agent Workflow for Customization
+**Objective**: Apply consistent visual identity across all user interfaces
 
-### Phase 1: Discovery & Planning
-```typescript
-interface CustomizationPlan {
-  businessType: string;        // "consulting", "saas", "ecommerce"  
-  brandIdentity: {
-    colors: string[];           // Primary, secondary colors
-    typography: string;         // Font selections
-    logoStyle: string;          // Modern, classic, minimal
-  };
-  contentNeeds: {
-    homepage: string[];         // Key messages, CTAs
-    features: Feature[];        // Core capabilities to highlight
-    testimonials: Testimonial[];
-  };
-  functionalityNeeds: {
-    enabledQBits: string[];     // Which modules to activate
-    customIntegrations: string[];  // Third-party services
-    additionalPages: string[];  // About, pricing, contact
-  };
-}
-```
-
-### Phase 2: Implementation Order
-1. **Brand Identity** (visual changes first - immediate user feedback)
-2. **Content Updates** (messaging and copy)
-3. **Feature Configuration** (enable/disable capabilities)
-4. **Custom Functionality** (new features if needed)
-5. **Production Setup** (deployment configuration)
-
-### Phase 3: Validation Protocol
-```bash
-# Must pass before delivering to user
-npm run test:e2e  # All E2E tests pass
-npm run build     # Production build succeeds
-docker-compose up -d  # Infrastructure starts correctly
-curl http://localhost:3004  # Site accessible
-```
-
-## 📋 Agent Task Templates
-
-### Task: "Make this look like a [INDUSTRY] business"
-1. **Analyze industry requirements**:
-   - Color schemes typical for industry
-   - Messaging tone (professional, creative, technical)
-   - Feature priorities (CRM for B2B, newsletter for content)
-
-2. **Apply systematic changes**:
-   ```typescript
-   // Industry-specific configurations
-   const industryConfigs = {
-     consulting: { primary: '#2563eb', tone: 'professional', focus: 'crm' },
-     creative: { primary: '#7c3aed', tone: 'inspiring', focus: 'content' },
-     saas: { primary: '#059669', tone: 'technical', focus: 'newsletter' }
+**Implementation Steps**:
+1. Update color palette in `web/app/globals.css`:
+   ```css
+   :root {
+     --primary-color: #your-brand-color;
+     --secondary-color: #your-accent-color;
+     --background-color: #your-background;
    }
    ```
 
-3. **Validate changes**: Run E2E tests, verify visual consistency
+2. Replace logo assets in `web/public/`:
+   - `logo.svg` - Primary logo for headers
+   - `favicon.ico` - Browser tab icon
+   - Social sharing images as needed
 
-### Task: "Add [FEATURE] functionality"
-1. **Determine scope**:
-   - New QBit module? (`qbits/feature/`)
-   - Frontend component? (`web/components/feature.tsx`)
-   - API endpoint? (`platform-api/controllers/`)
-   - Database changes? (`db/migrations/`)
-
-2. **Implementation pattern**:
-   ```bash
-   # Create backend capability
-   qbits/[feature]/
-   ├── src/main/java/[...]/FeatureQBitProducer.java
-   ├── src/main/java/[...]/service/FeatureService.java
-   └── README.md
-   
-   # Add API endpoints  
-   platform-api/src/main/java/[...]/FeatureController.java
-   
-   # Create frontend interface
-   web/app/[feature]/page.tsx
-   web/components/[feature].tsx
-   
-   # Add tests
-   web/tests/[feature].spec.ts
+3. Configure typography in `web/app/layout.tsx`:
+   ```typescript
+   import { Inter, Playfair_Display } from 'next/font/google'
    ```
 
-3. **Integration**: Update navigation, permissions, documentation
-
-### Task: "Deploy to production"
-1. **Environment preparation**:
-   ```bash
-   # Production environment file
-   cp .env.example .env.production
-   # Update with real domains, secrets, service endpoints
+4. Update site metadata:
+   ```typescript
+   export const metadata = {
+     title: 'Your Business Name',
+     description: 'Your business description'
+   }
    ```
 
-2. **Security checklist**:
-   - Change default passwords (Keycloak admin)
-   - Configure SSL certificates
-   - Set up proper CORS origins
-   - Enable production logging
+**Validation**: Verify visual consistency across desktop and mobile interfaces
 
-3. **Deployment validation**:
-   - Health checks pass
-   - Authentication flows work
-   - Newsletter/email integration functional
-   - Performance acceptable (< 2s load times)
+### Content Customization
 
-## 🚨 Agent Safety Guidelines
+**Objective**: Adapt messaging and content structure to business requirements
 
-### Always Validate Changes
-```bash
-# Before making changes
-git add -A && git commit -m "Pre-change snapshot"
+**Homepage Modification** (`web/app/page.tsx`):
+1. Update hero section messaging
+2. Modify feature descriptions and benefits
+3. Replace testimonial content
+4. Adjust call-to-action elements
 
-# After making changes
-npm run test:e2e  # Must pass
-npm run build     # Must succeed
+**Navigation Structure** (`web/components/header.tsx`):
+1. Add or remove menu items
+2. Update link destinations
+3. Modify company branding elements
 
-# If tests fail, investigate and fix before continuing
+**Footer Configuration** (`web/components/footer.tsx`):
+1. Update contact information
+2. Add legal page links
+3. Configure social media links
+
+**Validation**: Ensure all internal links function correctly and content displays properly
+
+### Functional Configuration
+
+**Objective**: Enable or modify business capabilities based on requirements
+
+**Feature Toggle Configuration**:
+```yaml
+# platform-app/src/main/resources/application.yml
+platform:
+  features:
+    newsletter: true
+    blog: true
+    crm: true
+    ecommerce: false
 ```
 
-### Preserve Working Functionality  
-- Never modify core QQQ framework files
-- Always extend via QBit modules
-- Keep authentication system intact
-- Maintain API backward compatibility
+**API Endpoint Customization**:
+1. Extend controllers in `platform-api/src/main/java/`
+2. Add business logic in service classes
+3. Update database schema through Liquibase migrations
+4. Implement corresponding frontend interfaces
 
-### User Experience Priority
-- Changes should improve, not degrade UX
-- Maintain responsive design on all devices
-- Ensure accessibility standards
-- Keep load times under 3 seconds
+**Integration Configuration**:
+- Email service provider (SMTP settings)
+- Payment processing (if required)
+- Analytics tracking (Google Analytics, etc.)
+- Third-party API connections
 
-## 📊 Success Metrics for Agents
+**Validation**: Execute end-to-end tests to verify functionality
 
-### Technical Success
-- ✅ All 26 E2E tests pass
-- ✅ Production build completes successfully  
-- ✅ No TypeScript/Java compilation errors
-- ✅ Docker Compose starts all services
+### New Feature Development
 
-### User Experience Success  
-- ✅ Site loads in < 3 seconds
-- ✅ Mobile responsive design maintained
-- ✅ Authentication flows work smoothly
-- ✅ Newsletter signup functional
-- ✅ Admin dashboard accessible
+**Objective**: Add custom business capabilities while maintaining platform integrity
 
-### Business Success
-- ✅ Brand identity clearly communicated
-- ✅ Value proposition evident on homepage
-- ✅ Contact/conversion paths clear
-- ✅ Professional appearance maintained
+**QBit Module Creation**:
+1. Create module structure: `qbits/[feature-name]/`
+2. Implement Java service classes and data models
+3. Add database migration scripts
+4. Create REST API endpoints
+5. Develop frontend components
+6. Write comprehensive tests
 
-## 🔍 Debugging Guide for Agents
+**Module Integration**:
+1. Register module in platform configuration
+2. Update navigation and user interfaces
+3. Configure security and access control
+4. Add administrative interfaces
 
-### Common Issues & Solutions
+**Testing Requirements**:
+1. Unit tests for service layer
+2. Integration tests for API endpoints
+3. End-to-end tests for user workflows
+4. Performance validation under load
 
-**Frontend not loading**:
+## Quality Assurance Procedures
+
+### Automated Testing Protocol
+
+**Pre-Deployment Validation**:
 ```bash
-cd web
-rm -rf .next node_modules/.cache
-npm install
-npm run dev -- --port 3004
+# Frontend type checking
+cd web && npm run type-check
+
+# Backend compilation
+./mvnw compile
+
+# End-to-end test execution
+cd web && npm run test:e2e
+
+# Production build verification
+npm run build
 ```
 
-**Backend API errors**:
+**Test Coverage Requirements**:
+- All new API endpoints must have integration tests
+- User interface components require end-to-end test coverage
+- Database migrations must include rollback procedures
+- Security configurations require validation tests
+
+### Performance Considerations
+
+**Frontend Optimization**:
+- Image assets optimized for web delivery
+- CSS and JavaScript bundle size monitoring
+- Core Web Vitals compliance
+- Mobile performance validation
+
+**Backend Optimization**:
+- Database query performance analysis
+- API response time monitoring
+- Memory usage profiling
+- Connection pool configuration
+
+### Security Validation
+
+**Authentication and Authorization**:
+- Role-based access control verification
+- Session management security
+- CSRF protection validation
+- Input sanitization testing
+
+**Data Protection**:
+- Sensitive data encryption
+- Secure credential storage
+- API rate limiting
+- SQL injection prevention
+
+## Deployment Procedures
+
+### Development Environment
+
+**Local Development Setup**:
+1. Start infrastructure services via Docker Compose
+2. Configure environment variables for development
+3. Initialize database with sample data
+4. Start frontend development server
+5. Validate all services through health checks
+
+### Production Deployment
+
+**Environment Preparation**:
+1. Configure production environment variables
+2. Set up SSL/TLS certificates
+3. Configure external database services
+4. Set up email service provider
+5. Configure monitoring and logging
+
+**Deployment Validation**:
+1. Health check endpoint verification
+2. Authentication flow testing
+3. Critical business function validation
+4. Performance benchmark execution
+5. Security scan completion
+
+## Error Handling and Troubleshooting
+
+### Common Integration Issues
+
+**Frontend Build Failures**:
+- TypeScript compilation errors
+- Missing dependency installations
+- Asset loading failures
+- CSS compilation issues
+
+**Backend Service Issues**:
+- Database connection failures
+- Authentication configuration errors
+- API endpoint registration problems
+- Security policy conflicts
+
+**Infrastructure Problems**:
+- Container startup failures
+- Port conflict resolution
+- Network connectivity issues
+- Resource allocation problems
+
+### Diagnostic Procedures
+
+**Log Analysis**:
 ```bash
-# Check logs
+# Frontend development logs
+npm run dev
+
+# Backend application logs
 docker-compose logs qqq-server
-# Restart with clean state
-docker-compose down --volumes
-docker-compose up -d
+
+# Infrastructure service logs
+docker-compose logs [service-name]
 ```
 
-**Authentication not working**:
+**Health Check Validation**:
 ```bash
-# Verify Keycloak
+# API server health
+curl http://localhost:18082/api/public/v1/health
+
+# Authentication server status
 curl http://localhost:18081/realms/qqq-platform/.well-known/openid-configuration
-# Check environment variables
-cat web/.env.local
+
+# Database connectivity
+docker exec qqq-platform-postgres psql -U platform_app -d qqq_platform -c "SELECT 1"
 ```
 
-**Newsletter form not submitting**:
-```bash
-# Test backend directly
-curl -X POST http://localhost:18082/api/public/v1/newsletter/subscribe \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com"}'
-```
+## Documentation Standards
 
-### When to Ask for Help
-- User requests functionality outside QBit extension model
-- Need to integrate with specific third-party services not documented
-- Performance issues that require infrastructure changes
-- Security requirements beyond standard authentication
+### Code Documentation
 
-## 📝 Documentation Standards
+**Inline Documentation Requirements**:
+- Complex business logic requires explanatory comments
+- API endpoints require OpenAPI annotations
+- Database migrations require change descriptions
+- Frontend components require TypeScript interfaces
 
-When making changes, always update:
-1. **Inline comments** for complex logic
-2. **README files** for new modules  
-3. **API documentation** for new endpoints
-4. **E2E tests** for new user flows
-5. **This guide** for new patterns discovered
+### User Documentation Updates
 
----
+**When to Update Documentation**:
+- New feature additions
+- Configuration changes
+- API modifications
+- Deployment procedure changes
 
-**🎯 Agent Success**: The user has a fully functional, professionally customized business platform that meets their specific needs and can be deployed to production with confidence.
+**Documentation Formats**:
+- README files for module-specific information
+- API documentation through Swagger/OpenAPI
+- User guides for administrative procedures
+- Troubleshooting guides for common issues
+
+## Success Metrics
+
+### Technical Success Indicators
+
+**Functionality Metrics**:
+- All end-to-end tests pass without failures
+- Production build completes successfully
+- No TypeScript or Java compilation errors
+- Docker Compose starts all services correctly
+
+**Performance Metrics**:
+- Page load times under 3 seconds
+- API response times under 500ms
+- Database query performance acceptable
+- Mobile interface fully responsive
+
+### Business Success Indicators
+
+**User Experience Metrics**:
+- Brand identity consistently applied
+- Navigation intuitive and functional
+- Content clearly communicates value proposition
+- Conversion paths properly implemented
+
+**Operational Metrics**:
+- Administrative functions accessible and functional
+- User registration and authentication working
+- Email delivery and tracking operational
+- Data persistence and backup procedures working
+
+This guide provides the foundation for systematic platform customization while maintaining code quality, security standards, and operational reliability.
