@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "next-env.d.ts",
+    "types/**/*.d.ts",
+    "app/member/**/*.tsx",
+    "components/member-layout.tsx",
+    "components/profile-form.tsx",
+    "components/page-shell.tsx",
+    "components/ui/button.tsx",
+    "lib/member-api.ts",
+    "lib/api.ts",
+    "lib/schemas.ts",
+    "lib/utils.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

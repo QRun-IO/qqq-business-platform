@@ -1,0 +1,48 @@
+# QQQ Business Platform - Docker Compose Configuration
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/qqq_platform
+    username: platform_app
+    password: qqq_platform
+    driver-class-name: org.postgresql.Driver
+    
+  # Email configuration for newsletter QBit
+  mail:
+    host: mailpit
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          ssl:
+            enable: false
+            
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8081/realms/qqq-platform
+          jwk-set-uri: http://keycloak:8081/realms/qqq-platform/protocol/openid-connect/certs
+
+# Newsletter configuration
+newsletter:
+  provider: smtp
+  from: noreply@qqq-platform.local
+  confirmation-base-url: http://localhost:18080/api/public/v1/newsletter/confirm
+  worker:
+    delay-ms: 1000
+    batch-size: 50
+
+# Object storage  
+minio:
+  endpoint: http://minio:9000
+  access-key: minio_admin
+  secret-key: minio_admin_password
+  
+logging:
+  level:
+    com.qrunio: DEBUG
+    org.springframework.security: DEBUG

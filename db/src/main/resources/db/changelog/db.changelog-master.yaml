@@ -3,11 +3,15 @@ databaseChangeLog:
   - include:
       file: db/changelog/platform/001-schema.yaml
   - include:
+      file: db/changelog/platform/002-local-registration.yaml
+  - include:
       file: db/changelog/qbits/identity/001-baseline.yaml
   - include:
       file: db/changelog/qbits/newsletter/001-baseline.yaml
   - include:
       file: db/changelog/qbits/content/001-baseline.yaml
+  - include:
+      file: db/changelog/qbits/content/002-blog-taxonomy.sql
   - include:
       file: db/changelog/demo/newsletter/001-demo.yaml
 

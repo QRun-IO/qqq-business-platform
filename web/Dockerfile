@@ -23,8 +23,9 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
-# Build application
-RUN npm run build
+# The live-service E2E gate runs before this image build in CI. Running it inside
+# Docker cannot reach the host-bound identity/API stack, so invoke Next directly.
+RUN npm run build:app
 
 # Production image, copy all the files and run next
 FROM base AS runner

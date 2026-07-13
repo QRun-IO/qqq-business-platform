@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  experimental: {
-    appDir: true,
-  },
-  env: {
-    CUSTOM_KEY: 'my-value',
-  },
   async rewrites() {
     return [
       {

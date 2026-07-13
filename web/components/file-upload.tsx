@@ -1,0 +1,7 @@
+'use client'
+import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { apiFetch, backendPath } from '@/lib/api'
+import { FileUp, Loader2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+export function FileUpload({onUploaded}:{onUploaded?:(url:string)=>void}){const {data}=useSession();const [busy,setBusy]=useState(false);const [file,setFile]=useState<File>();async function upload(){if(!file)return;setBusy(true);try{const form=new FormData();form.append('file',file);const result=await apiFetch<{url:string}>(backendPath('staff','files'),{method:'POST',body:form},data?.accessToken);onUploaded?.(result.url);toast.success('File uploaded to media storage')}catch(e){toast.error(e instanceof Error?e.message:'Upload failed')}finally{setBusy(false)}}return <div className="rounded-xl border border-dashed bg-slate-50 p-5"><div className="flex flex-col items-center gap-3 text-center"><FileUp className="text-blue-600"/><div><p className="font-semibold">Upload media</p><p className="text-xs text-slate-500">Images, PDF or office documents up to 10 MB</p></div><input aria-label="Choose file" type="file" accept="image/*,.pdf,.doc,.docx" onChange={e=>setFile(e.target.files?.[0])}/><button type="button" disabled={!file||busy} onClick={upload} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">{busy?<Loader2 className="animate-spin"/>:'Upload file'}</button></div></div>}

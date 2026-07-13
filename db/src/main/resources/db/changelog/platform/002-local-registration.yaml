@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: platform-002-local-registration
+      author: qrun
+      context: baseline
+      changes:
+        - createTable:
+            tableName: local_registration
+            columns:
+              - column: {name: id, type: uuid, constraints: {primaryKey: true, nullable: false}}
+              - column: {name: email, type: varchar(320), constraints: {nullable: false, unique: true}}
+              - column: {name: password_hash, type: varchar(100), constraints: {nullable: false}}
+              - column: {name: display_name, type: varchar(255), constraints: {nullable: false}}
+              - column: {name: enabled, type: boolean, defaultValueBoolean: true, constraints: {nullable: false}}
+              - column: {name: created_at, type: timestamptz, constraints: {nullable: false}}
+              - column: {name: updated_at, type: timestamptz, constraints: {nullable: false}}

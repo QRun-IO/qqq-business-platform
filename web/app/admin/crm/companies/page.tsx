@@ -1,0 +1,1 @@
+// Placeholder for CRM company management page. Will be implemented soon.

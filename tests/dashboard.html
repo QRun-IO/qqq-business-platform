@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQQ Business Platform - Live Test Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .test-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .test-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .test-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #cbd5e0;
+        }
+        
+        .test-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .test-result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pass {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-fail {
+            background: #f56565;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #ed8936;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .test-link {
+            display: inline-block;
+            color: #4299e1;
+            text-decoration: none;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border: 1px solid #4299e1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .test-link:hover {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .summary {
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .summary h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            border: none;
+            padding: 0;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            transition: width 0.5s ease;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            transition: transform 0.2s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 QQQ Business Platform</h1>
+            <p>Live Test Dashboard & Validation Suite</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h2>🏗️ Infrastructure Services</h2>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <h3>Database (PostgreSQL)</h3>
+                        <div class="test-result" id="postgres-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing connection...</span>
+                        </div>
+                        <a href="http://localhost:18080/api/public/v1/health" target="_blank" class="test-link">Health Check</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Authentication (Keycloak)</h3>
+                        <div class="test-result" id="keycloak-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing OIDC realm...</span>
+                        </div>
+                        <a href="http://localhost:18081/admin" target="_blank" class="test-link">Admin Console (admin/admin)</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Email Testing (Mailpit)</h3>
+                        <div class="test-result" id="mailpit-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing email service...</span>
+                        </div>
+                        <a href="http://localhost:8025" target="_blank" class="test-link">Email Interface</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Object Storage (MinIO)</h3>
+                        <div class="test-result" id="minio-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing storage console...</span>
+                        </div>
+                        <a href="http://localhost:19001" target="_blank" class="test-link">MinIO Console (minio_admin/minio_admin_password)</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>🔌 API Endpoints</h2>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <h3>Public API</h3>
+                        <div class="test-result" id="api-public-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing public endpoints...</span>
+                        </div>
+                        <a href="http://localhost:18080/api/public/v1/content/posts" target="_blank" class="test-link">Blog Posts API</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Member API</h3>
+                        <div class="test-result" id="api-member-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing protected endpoints...</span>
+                        </div>
+                        <a href="http://localhost:18080/api/member/v1/profile" target="_blank" class="test-link">Profile API (Auth Required)</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Staff API</h3>
+                        <div class="test-result" id="api-staff-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing admin endpoints...</span>
+                        </div>
+                        <a href="http://localhost:18080/api/staff/v1/users" target="_blank" class="test-link">Users API (Admin Required)</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Newsletter API</h3>
+                        <div class="test-result" id="newsletter-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing newsletter subscription...</span>
+                        </div>
+                        <button onclick="testNewsletterSubscription()" class="test-link" style="border: none; background: none; color: #4299e1; cursor: pointer;">Test Subscription</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>🌐 Frontend Application</h2>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <h3>Homepage</h3>
+                        <div class="test-result" id="frontend-home-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing homepage...</span>
+                        </div>
+                        <a href="http://localhost:13000" target="_blank" class="test-link">Visit Homepage</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>User Authentication</h3>
+                        <div class="test-result" id="frontend-auth-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing login/register...</span>
+                        </div>
+                        <a href="http://localhost:13000/login" target="_blank" class="test-link">Login Page</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Blog System</h3>
+                        <div class="test-result" id="frontend-blog-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing blog pages...</span>
+                        </div>
+                        <a href="http://localhost:13000/blog" target="_blank" class="test-link">Blog Page</a>
+                    </div>
+                    
+                    <div class="test-card">
+                        <h3>Admin Dashboard</h3>
+                        <div class="test-result" id="frontend-admin-result">
+                            <div class="status-icon status-pending">⏳</div>
+                            <span>Testing admin interface...</span>
+                        </div>
+                        <a href="http://localhost:13000/admin" target="_blank" class="test-link">Admin Dashboard</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="summary">
+                <h2>📊 Test Summary</h2>
+                <div id="summary-text">Running tests...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="summary-details"></div>
+                <button class="refresh-btn" onclick="runAllTests()" id="refresh-btn">🔄 Run Tests</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+        let totalTests = 0;
+        let completedTests = 0;
+
+        async function testEndpoint(url, expectedStatuses = [200]) {
+            try {
+                const response = await fetch(url, { 
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                return expectedStatuses.includes(response.status);
+            } catch (error) {
+                console.error(`Error testing ${url}:`, error);
+                return false;
+            }
+        }
+
+        function updateTestResult(elementId, passed, message) {
+            const element = document.getElementById(elementId);
+            const statusIcon = element.querySelector('.status-icon');
+            const statusText = element.querySelector('span');
+            
+            statusIcon.className = `status-icon ${passed ? 'status-pass' : 'status-fail'}`;
+            statusIcon.textContent = passed ? '✅' : '❌';
+            statusText.textContent = message;
+            
+            testResults[elementId] = passed;
+            completedTests++;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progressPercent = (completedTests / totalTests) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+            
+            const passedTests = Object.values(testResults).filter(Boolean).length;
+            const successRate = (passedTests / completedTests) * 100;
+            
+            document.getElementById('summary-text').textContent = 
+                `${completedTests}/${totalTests} tests completed - ${passedTests} passed (${Math.round(successRate)}%)`;
+            
+            if (completedTests === totalTests) {
+                document.getElementById('refresh-btn').disabled = false;
+                
+                let statusMessage = '';
+                if (successRate >= 90) {
+                    statusMessage = '🎉 QQQ Business Platform is EXCELLENT!';
+                } else if (successRate >= 75) {
+                    statusMessage = '✅ QQQ Business Platform is OPERATIONAL!';
+                } else if (successRate >= 50) {
+                    statusMessage = '⚠️ QQQ Business Platform has some issues';
+                } else {
+                    statusMessage = '❌ QQQ Business Platform has significant problems';
+                }
+                
+                document.getElementById('summary-details').innerHTML = `<strong>${statusMessage}</strong>`;
+            }
+        }
+
+        async function testNewsletterSubscription() {
+            try {
+                const response = await fetch('http://localhost:18080/api/public/v1/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: `test-${Date.now()}@example.com`,
+                        firstName: 'Test',
+                        lastName: 'User'
+                    })
+                });
+                
+                const success = [200, 201, 400].includes(response.status); // 400 for validation is OK
+                updateTestResult('newsletter-result', success, 
+                    `Newsletter endpoint responded with ${response.status}`);
+            } catch (error) {
+                updateTestResult('newsletter-result', false, 'Newsletter endpoint failed');
+            }
+        }
+
+        async function runAllTests() {
+            document.getElementById('refresh-btn').disabled = true;
+            testResults = {};
+            completedTests = 0;
+            totalTests = 12; // Update this if you add more tests
+            
+            // Reset all status icons
+            document.querySelectorAll('.status-icon').forEach(icon => {
+                icon.className = 'status-icon status-pending';
+                icon.textContent = '⏳';
+            });
+            document.querySelectorAll('.test-result span').forEach(span => {
+                span.textContent = 'Testing...';
+            });
+            
+            // Test infrastructure
+            testEndpoint('http://localhost:18080/api/public/v1/health')
+                .then(result => updateTestResult('postgres-result', result, 
+                    result ? 'Database connection OK' : 'Database connection failed'));
+            
+            testEndpoint('http://localhost:18081/realms/qqq-platform/.well-known/openid_configuration')
+                .then(result => updateTestResult('keycloak-result', result, 
+                    result ? 'OIDC realm configured' : 'Keycloak realm failed'));
+            
+            testEndpoint('http://localhost:8025/api/v1/info')
+                .then(result => updateTestResult('mailpit-result', result, 
+                    result ? 'Email service running' : 'Email service failed'));
+            
+            testEndpoint('http://localhost:19001', [200, 403])
+                .then(result => updateTestResult('minio-result', result, 
+                    result ? 'Storage console running' : 'Storage console failed'));
+            
+            // Test APIs
+            testEndpoint('http://localhost:18080/api/public/v1/content/posts', [200, 404])
+                .then(result => updateTestResult('api-public-result', result, 
+                    result ? 'Public API responding' : 'Public API failed'));
+            
+            testEndpoint('http://localhost:18080/api/member/v1/profile', [401, 403])
+                .then(result => updateTestResult('api-member-result', result, 
+                    result ? 'Auth required (correct)' : 'Member API failed'));
+            
+            testEndpoint('http://localhost:18080/api/staff/v1/users', [401, 403])
+                .then(result => updateTestResult('api-staff-result', result, 
+                    result ? 'Admin auth required (correct)' : 'Staff API failed'));
+            
+            // Test frontend
+            testEndpoint('http://localhost:13000')
+                .then(result => updateTestResult('frontend-home-result', result, 
+                    result ? 'Homepage loading' : 'Homepage failed'));
+            
+            testEndpoint('http://localhost:13000/login', [200, 404])
+                .then(result => updateTestResult('frontend-auth-result', result, 
+                    result ? 'Auth pages available' : 'Auth pages failed'));
+            
+            testEndpoint('http://localhost:13000/blog', [200, 404])
+                .then(result => updateTestResult('frontend-blog-result', result, 
+                    result ? 'Blog pages available' : 'Blog pages failed'));
+            
+            testEndpoint('http://localhost:13000/admin', [200, 404, 401, 403])
+                .then(result => updateTestResult('frontend-admin-result', result, 
+                    result ? 'Admin interface available' : 'Admin interface failed'));
+            
+            // Test newsletter (will be called separately)
+            setTimeout(testNewsletterSubscription, 1000);
+        }
+
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>

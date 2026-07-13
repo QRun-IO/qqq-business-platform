@@ -1,0 +1,1 @@
+// Placeholder for contact form component. Will be implemented soon.

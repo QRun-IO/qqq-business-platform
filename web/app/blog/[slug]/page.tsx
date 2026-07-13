@@ -1,0 +1,5 @@
+import { notFound } from 'next/navigation'
+type Block={type:string;html?:string;url?:string;alt?:string}
+async function post(slug:string){try{const r=await fetch(`${process.env.API_BASE_URL_INTERNAL||'http://localhost:18082'}/api/public/v1/content/posts/${encodeURIComponent(slug)}`,{next:{revalidate:60}});if(!r.ok)return null;return r.json()}catch{return null}}
+const render=(content:Block[]|string)=>typeof content==='string'?content:(content||[]).map(x=>x.type==='html'?x.html:`<img src="${x.url||''}" alt="${x.alt||''}">`).join('\n')
+export default async function Story({params}:{params:{slug:string}}){const x=await post(params.slug);if(!x)notFound();return <article className="container max-w-3xl bg-[#fbfaf6] py-16 text-[#111218]"><p className="eyebrow text-[#55776b]">{x.publishedAt?new Date(x.publishedAt).toLocaleDateString():'QQQ Journal'}</p><h1 className="display mt-4 text-5xl sm:text-7xl">{x.title}</h1><p className="mt-6 text-xl leading-8 text-[#657069]">{x.excerpt}</p><div className="prose prose-lg mt-12 max-w-none" dangerouslySetInnerHTML={{__html:render(x.content)}}/></article>}

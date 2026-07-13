@@ -5,20 +5,19 @@ services:
   # ========== Database Layer ==========
   
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: qqq-platform-postgres
     environment:
       POSTGRES_DB: qqq_platform
-      POSTGRES_USER: platform_ddl
-      POSTGRES_PASSWORD: platform_ddl_password
-      # Application user created by init script
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
+      - ./config/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
-      - ./config/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     ports:
       - "15432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U platform_ddl -d qqq_platform"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qqq_platform"]
       interval: 2s
       timeout: 3s
       retries: 5
@@ -29,7 +28,7 @@ services:
   # ========== Migration ==========
   
   migrate:
-    image: liquibase/liquibase:4.25-alpine
+    image: liquibase/liquibase:4.28-alpine
     container_name: qqq-platform-migrate
     depends_on:
       postgres:
@@ -50,7 +49,7 @@ services:
   # ========== Identity Provider ==========
   
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0
+    image: quay.io/keycloak/keycloak:25.0
     container_name: qqq-platform-keycloak
     environment:
       KEYCLOAK_ADMIN: admin
@@ -88,17 +87,17 @@ services:
   # ========== Object Storage ==========
   
   minio:
-    image: minio/minio:RELEASE.2024-01-01T16-36-33Z
+    image: minio/minio:latest
     container_name: qqq-platform-minio
     environment:
       MINIO_ROOT_USER: minio_admin
       MINIO_ROOT_PASSWORD: minio_admin_password
-      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:19001
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"  # API
+      - "19000:9000"  # API
       - "19001:9001"  # Console
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
@@ -131,7 +130,7 @@ services:
   # ========== Email (Development) ==========
   
   mailpit:
-    image: axllent/mailpit:v1.15
+    image: axllent/mailpit:latest
     container_name: qqq-platform-mailpit
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
@@ -197,7 +196,7 @@ services:
       minio-setup:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/public/v1/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -215,6 +214,11 @@ services:
     image: qqq-platform-web:latest
     container_name: qqq-platform-web
     environment:
+      NEXTAUTH_URL: http://localhost:13000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-replace-this-development-secret}
+      KEYCLOAK_ISSUER: http://localhost:18081/realms/qqq-platform
+      KEYCLOAK_CLIENT_ID: platform-web
+      KEYCLOAK_CLIENT_SECRET: platform-web-secret
       NEXT_PUBLIC_API_BASE_URL: http://localhost:18080/api/public/v1
       NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:18081
       NEXT_PUBLIC_KEYCLOAK_REALM: qqq-platform
@@ -237,7 +241,7 @@ services:
   # ========== Reverse Proxy ==========
   
   caddy:
-    image: caddy:2.7-alpine
+    image: caddy:2-alpine
     container_name: qqq-platform-caddy
     volumes:
       - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -251,44 +255,6 @@ services:
     networks:
       - platform-network
     restart: unless-stopped
-
-  # ========== Golden Path Validation ==========
-  
-  healthcheck:
-    image: curlimages/curl:8.5.0
-    container_name: qqq-platform-healthcheck
-    depends_on:
-      caddy:
-        condition: service_started
-      qqq-server:
-        condition: service_healthy
-      nextjs-site:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Starting golden path validation...' &&
-        sleep 5 &&
-        
-        echo 'Testing public API...' &&
-        curl -f http://qqq-server:8080/api/public/v1/health &&
-        
-        echo 'Testing member API (should require auth)...' &&
-        curl -s -o /dev/null -w '%{http_code}' http://qqq-server:8080/api/member/v1/profile | grep -q '401' &&
-        
-        echo 'Testing staff API (should require auth)...' &&
-        curl -s -o /dev/null -w '%{http_code}' http://qqq-server:8080/api/staff/v1/content | grep -q '401' &&
-        
-        echo 'Testing Next.js frontend...' &&
-        curl -f http://nextjs-site:3000/ &&
-        
-        echo 'Testing Keycloak realm...' &&
-        curl -f http://keycloak:8081/realms/qqq-platform/.well-known/openid_configuration &&
-        
-        echo 'Golden path validation completed successfully!' &&
-        exit 0
-      "
-    networks:
-      - platform-network
 
 # ========== Volumes ==========
 

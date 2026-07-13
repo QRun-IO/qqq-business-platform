@@ -1,69 +1,76 @@
 'use client'
-
-import { useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { newsletterSchema } from '@/lib/schemas'
+import { z } from 'zod'
+import toast from 'react-hot-toast'
+import { apiFetch, backendPath } from '@/lib/api'
+import { ArrowRight, Loader2 } from 'lucide-react'
 
 export function Newsletter() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<z.infer<typeof newsletterSchema>>({
+    resolver: zodResolver(newsletterSchema)
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) {
-      toast.error('Please enter your email address')
-      return
-    }
-
-    setLoading(true)
-    
+  const onSubmit = async (values: z.infer<typeof newsletterSchema>) => {
     try {
-      const response = await fetch('/api/public/v1/newsletter/subscribe', {
+      console.log('Newsletter submission starting...', values)
+      
+      // Use Next.js API route instead of direct backend call (bypasses CORS)
+      const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
       })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success('Subscription initiated! Please check your email for confirmation.')
-        setEmail('')
-      } else {
-        toast.error(data.message || 'Failed to subscribe. Please try again.')
+      
+      console.log('API response status:', response.status)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Subscription failed')
       }
+      
+      const result = await response.json()
+      
+      console.log('Newsletter subscription result:', result)
+      toast.success('Check your inbox to confirm your subscription.')
+      reset()
     } catch (error) {
       console.error('Newsletter subscription error:', error)
-      toast.error('Network error. Please try again.')
-    } finally {
-      setLoading(false)
+      toast.error(error instanceof Error ? error.message : 'Unable to subscribe')
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-      <div className="flex-1">
-        <label htmlFor="email" className="sr-only">
-          Email address
+    <form className="newsletter-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div>
+        <label className="sr-only" htmlFor="newsletter-email">
+          Work email
         </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
-          disabled={loading}
-          required
+        <input 
+          id="newsletter-email"
+          type="email" 
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'newsletter-email-error' : undefined}
+          placeholder="Work email address" 
+          {...register('email')}
         />
+        {errors.email && (
+          <p id="newsletter-email-error">{errors.email.message}</p>
+        )}
       </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-md bg-white px-6 py-2 text-blue-600 font-semibold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 disabled:opacity-50"
-      >
-        {loading ? 'Subscribing...' : 'Subscribe'}
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="spin" size={16} /> 
+            Subscribing
+          </>
+        ) : (
+          <>
+            Join the list 
+            <ArrowRight size={16} />
+          </>
+        )}
       </button>
     </form>
   )

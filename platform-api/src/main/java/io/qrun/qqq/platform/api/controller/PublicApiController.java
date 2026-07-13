@@ -32,6 +32,7 @@ public class PublicApiController {
      * Implements double opt-in process
      */
     @PostMapping("/newsletter/subscribe")
+    @CrossOrigin(origins = {"http://localhost:3004", "http://localhost:3005"}, allowedHeaders = "*", methods = {RequestMethod.POST, RequestMethod.OPTIONS})
     @Operation(summary = "Subscribe to newsletter", description = "Initiates double opt-in subscription process")
     public ResponseEntity<Map<String, String>> subscribeNewsletter(
             @Valid @RequestBody SubscribeRequest request,

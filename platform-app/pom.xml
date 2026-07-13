@@ -17,11 +17,23 @@
     <dependency><groupId>io.qrun</groupId><artifactId>qbit-content</artifactId></dependency>
     <dependency><groupId>io.qrun</groupId><artifactId>qbit-newsletter</artifactId></dependency>
     <dependency><groupId>io.qrun</groupId><artifactId>qbit-crm</artifactId></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
   </dependencies>
   <build><plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.13.0</version>
+      <configuration>
+        <parameters>true</parameters>
+        <compilerArgs>
+          <arg>-parameters</arg>
+        </compilerArgs>
+      </configuration>
+    </plugin>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin>
     <plugin><groupId>com.google.cloud.tools</groupId><artifactId>jib-maven-plugin</artifactId><configuration>
       <from><image>eclipse-temurin:21-jre</image></from><to><image>${jib.to.image}</image></to>

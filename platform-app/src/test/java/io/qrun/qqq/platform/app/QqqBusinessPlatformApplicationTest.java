@@ -6,7 +6,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:9/jwks",
+    "spring.security.oauth2.resourceserver.jwt.issuer-uri=http://test-issuer"
+})
 class QqqBusinessPlatformApplicationTest {
 
     @Autowired

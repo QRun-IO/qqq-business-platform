@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+
+# Avoid paying the E2E cost for documentation-only commits. Application,
+# infrastructure, test, and workflow changes always exercise real services.
+if ! git diff --cached --name-only --diff-filter=ACMR | grep -Eq \
+  '^(web/|platform-app/|platform-api/|qbits/|db/|deploy/|pom\.xml$|\.github/workflows/)'; then
+  exit 0
+fi
+
+echo "Running blocking E2E validation against live platform services..."
+echo "Required endpoints: ${E2E_API_URL:-http://localhost:18082} and ${E2E_KEYCLOAK_URL:-http://localhost:18081}"
+
+cd "$repo_root/web"
+npm run test:e2e:precommit

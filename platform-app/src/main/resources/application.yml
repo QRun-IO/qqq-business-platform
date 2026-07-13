@@ -2,31 +2,31 @@ spring:
   application:
     name: qqq-business-platform
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/qqq_platform}
+    url: ${DB_URL:jdbc:postgresql://localhost:15432/qqq_platform}
     username: ${DB_USERNAME:platform_app}
     password: ${DB_PASSWORD:platform_app_password}
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
   liquibase:
     enabled: false
-  sql:
-    init:
-      mode: never
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}/protocol/openid-connect/certs}
+  sql.init.mode: never
+  servlet.multipart:
+    max-file-size: 10MB
+    max-request-size: 10MB
+  security.oauth2.resourceserver.jwt:
+    issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}
+    jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:${KEYCLOAK_ISSUER_URI:http://localhost:18081/realms/qqq-platform}/protocol/openid-connect/certs}
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      probes:
-        enabled: true
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.probes.enabled: true
 server:
   port: ${SERVER_PORT:${PORT:8080}}
+  forward-headers-strategy: framework
+  error.include-message: never
 newsletter:
   provider: ${NEWSLETTER_PROVIDER:smtp}
   from: ${NEWSLETTER_FROM:no-reply@localhost}
@@ -34,6 +34,11 @@ newsletter:
   worker:
     delay-ms: ${NEWSLETTER_WORKER_DELAY_MS:1000}
     batch-size: ${NEWSLETTER_WORKER_BATCH_SIZE:50}
-qqq:
-  instance:
-    dashboard: material-dashboard
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:19000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:qqq-assets}
+  max-file-size: ${MINIO_MAX_FILE_SIZE:10485760}
+security.jwt.audience: ${JWT_AUDIENCE:qqq-platform-api}
+qqq.instance.dashboard: material-dashboard

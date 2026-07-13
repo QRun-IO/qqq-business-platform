@@ -1,0 +1,1 @@
+// Placeholder for deal pipeline component. Will be implemented soon.

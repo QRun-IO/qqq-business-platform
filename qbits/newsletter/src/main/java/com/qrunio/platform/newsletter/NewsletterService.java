@@ -24,7 +24,8 @@ public class NewsletterService {
     byte[] token=new byte[32]; random.nextBytes(token); String raw=Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     db.update("delete from opt_in_token where subscription_id=? and consumed_at is null",subscriptionId);
     db.update("insert into opt_in_token(id,subscription_id,token_hash,expires_at,created_at) values(?,?,?,?,?)",UUID.randomUUID(),subscriptionId,hash(raw),ts(now.plus(Duration.ofHours(48))),ts(now));
-    String body="Confirm your subscription: "+confirmUrl+"?token="+raw;
+    String separator=confirmUrl.endsWith("/")?"":"/";
+    String body="Confirm your subscription: "+confirmUrl+separator+raw;
     db.update("insert into outbound_email(id,subscription_id,message_type,recipient,subject,body,status,next_attempt_at,created_at) values(?,?,?,?,?,?,?,?,?)",UUID.randomUUID(),subscriptionId,"opt_in",email,"Confirm your newsletter subscription",body,"pending",ts(now),ts(now));
     return new SubscribeResult(subscriptionId,"pending",raw);
   }
