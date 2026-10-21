@@ -1,18 +1,15 @@
 name: Database migrations
 'on':
-  pull_request:
-    paths:
-    - db/**
-    - pom.xml
-    - .github/workflows/db-migrations.yml
+  pull_request: {}
   push:
     branches:
     - main
-    paths:
-    - db/**
-    - pom.xml
 permissions:
   contents: read
 jobs:
   validate:
-    uses: QRun-IO/qqq-orb/.github/workflows/business-db.yml@0965a4565369a74650c8f96683b2296435a35382
+    uses: QRun-IO/qqq-orb/.github/workflows/business-db.yml@5bcec90e330b1b4d7ec416d64b065e0aed74a6ff
+concurrency:
+  group: business-db-${{ github.workflow }}-${{ github.event.pull_request.number ||
+    github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
