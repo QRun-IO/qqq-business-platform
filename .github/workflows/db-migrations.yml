@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   validate:
-    uses: QRun-IO/qqq-orb/.github/workflows/business-db.yml@5bcec90e330b1b4d7ec416d64b065e0aed74a6ff
+    uses: QRun-IO/qqq-orb/.github/workflows/business-db.yml@0f33ddadf88b9a1b940b8883782fe2000ee1d2bd
 concurrency:
   group: business-db-${{ github.workflow }}-${{ github.event.pull_request.number ||
     github.ref }}

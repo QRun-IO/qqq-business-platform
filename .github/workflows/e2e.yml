@@ -4,16 +4,14 @@ name: Required E2E validation
   push:
     branches:
     - main
-  schedule:
-  - cron: 17 6 * * *
   workflow_dispatch: null
 permissions:
   contents: read
 concurrency:
   group: e2e-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   validate:
-    uses: QRun-IO/qqq-orb/.github/workflows/business-e2e.yml@0965a4565369a74650c8f96683b2296435a35382
+    uses: QRun-IO/qqq-orb/.github/workflows/business-e2e.yml@0f33ddadf88b9a1b940b8883782fe2000ee1d2bd
     secrets:
       E2E_ALERT_WEBHOOK_URL: ${{ secrets.E2E_ALERT_WEBHOOK_URL }}
