@@ -20,17 +20,20 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 @DisabledIfEnvironmentVariable(named = "QQQ_EXTERNAL_DB_URL", matches = ".+")
 class NewsletterMigrationIT {
 
   private static final String CHANGELOG = "db/changelog/db.changelog-master.yaml";
-  private static final Set<String> NEWSLETTER_TABLES = Set.of(
+  private static final Set<String> PLATFORM_TABLES = Set.of(
       "newsletter_subscription", "newsletter_segment", "newsletter_campaign",
-      "outbound_email", "email_suppression", "opt_in_token");
+      "outbound_email", "email_suppression", "opt_in_token",
+      "user_profile", "local_registration", "cms_site", "cms_asset", "cms_author",
+      "cms_page", "cms_blog_post", "cms_tag", "cms_category", "cms_navigation",
+      "cms_redirect", "cms_content_revision", "cms_blog_post_category", "cms_blog_post_tag");
 
   @Container
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+  final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
       .withDatabaseName("qqq")
       .withUsername("qqq")
       .withPassword("qqq");
@@ -42,10 +45,10 @@ class NewsletterMigrationIT {
       liquibase.update(new Contexts("baseline"), new LabelExpression());
       liquibase.validate();
 
-      assertEquals(NEWSLETTER_TABLES, applicationTables(connection));
+      assertEquals(PLATFORM_TABLES, applicationTables(connection));
       assertEquals(0, count(connection, "newsletter_subscription"));
       assertEquals(0, count(connection, "newsletter_campaign"));
-      assertEquals(2, appliedChangeSets(connection));
+      assertEquals(6, appliedChangeSets(connection));
     }
   }
 
@@ -59,16 +62,16 @@ class NewsletterMigrationIT {
       assertEquals(1, count(connection, "newsletter_subscription"));
       assertEquals(1, count(connection, "newsletter_segment"));
       assertEquals(1, count(connection, "newsletter_campaign"));
-      assertEquals(3, appliedChangeSets(connection));
+      assertEquals(7, appliedChangeSets(connection));
 
       liquibase.update(new Contexts("baseline,demo"), new LabelExpression());
       assertEquals(1, count(connection, "newsletter_subscription"));
-      assertEquals(3, appliedChangeSets(connection));
+      assertEquals(7, appliedChangeSets(connection));
     }
   }
 
-  private static Connection connect() throws Exception {
-    return DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+  private Connection connect() throws Exception {
+    return DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
   }
 
   private static Liquibase liquibase(Connection connection) throws Exception {

@@ -19,7 +19,10 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 class ExternalPostgresMigrationIT {
   private static final Set<String> TABLES = Set.of(
       "newsletter_subscription", "newsletter_segment", "newsletter_campaign",
-      "outbound_email", "email_suppression", "opt_in_token");
+      "outbound_email", "email_suppression", "opt_in_token",
+      "user_profile", "local_registration", "cms_site", "cms_asset", "cms_author",
+      "cms_page", "cms_blog_post", "cms_tag", "cms_category", "cms_navigation",
+      "cms_redirect", "cms_content_revision", "cms_blog_post_category", "cms_blog_post_tag");
 
   @Test
   void emptyDatabaseMigratesValidatesAndSeedsDeterministically() throws Exception {
@@ -38,7 +41,7 @@ class ExternalPostgresMigrationIT {
         liquibase.update(new Contexts("baseline,demo"), new LabelExpression());
         liquibase.update(new Contexts("baseline,demo"), new LabelExpression());
         assertEquals(1, count(connection, "newsletter_subscription"));
-        assertEquals(3, count(connection, "databasechangelog"));
+        assertEquals(7, count(connection, "databasechangelog"));
       }
     }
   }
