@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call backend API from server-side (no CORS issues)
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18082'
+    const backendUrl = process.env.API_BASE_URL_INTERNAL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080'
     const response = await fetch(`${backendUrl}/api/public/v1/newsletter/subscribe`, {
       method: 'POST',
       headers: {

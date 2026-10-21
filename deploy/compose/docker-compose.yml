@@ -87,7 +87,7 @@ services:
   # ========== Object Storage ==========
   
   minio:
-    image: minio/minio:latest
+    image: cgr.dev/chainguard/minio:latest-dev@sha256:25c69c296421a54961076193a136b1b34d81e2c5c66c6fd596e16ec2d2f668be
     container_name: qqq-platform-minio
     environment:
       MINIO_ROOT_USER: minio_admin
@@ -100,7 +100,7 @@ services:
       - "19000:9000"  # API
       - "19001:9001"  # Console
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -110,7 +110,7 @@ services:
 
   # Initialize MinIO buckets
   minio-setup:
-    image: minio/mc:latest
+    image: cgr.dev/chainguard/minio-client:latest-dev@sha256:d0bce838369160ea7db20589040bee94bdb3e76dbf7fd10aa3eb755ae17a506b
     container_name: qqq-platform-minio-setup
     depends_on:
       minio:
@@ -121,7 +121,7 @@ services:
         mc alias set minio http://minio:9000 minio_admin minio_admin_password &&
         mc mb minio/platform-assets --ignore-existing &&
         mc mb minio/platform-uploads --ignore-existing &&
-        mc policy set public minio/platform-assets &&
+        mc anonymous set download minio/platform-assets &&
         echo 'MinIO setup completed!'
       "
     networks:
