@@ -1,0 +1,12 @@
+# Actual original db + live-service E2E qualification (manual run).
+name: original-qualification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify:
+    uses: self:KofTwentyTwo/platform-ci/.gitea/workflows/business-platform.yaml@e0b3bd0544cb9715009b378f1f64db1735fe8bde
+    with:
+      runner: linux-small
+      docker-runner: container-build
