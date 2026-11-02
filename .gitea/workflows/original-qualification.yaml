@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   qualify:
-    uses: self:KofTwentyTwo/platform-ci/.gitea/workflows/business-platform.yaml@e0b3bd0544cb9715009b378f1f64db1735fe8bde
+    uses: self:KofTwentyTwo/platform-ci/.gitea/workflows/business-platform.yaml@bb6fe9c178f010182be19304b34fef9feab3b27c
     with:
       runner: linux-small
       docker-runner: container-build
